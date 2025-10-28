@@ -65,6 +65,8 @@ from ultralytics.nn.modules import (
     WorldDetect,
     v10Detect,
     A2C2f,
+    Stage,
+    CSWinTransformer,
 )
 from ultralytics.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
 from ultralytics.utils.checks import check_requirements, check_suffix, check_yaml
@@ -1064,6 +1066,18 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
             args = [c1, c2, *args[1:]]
         elif m is CBFuse:
             c2 = ch[f[-1]]
+        elif m is CSWinTransformer:
+            cswin = CSWinTransformer(*args)
+            c2 = list(cswin.out_channels)  # lấy đúng out_channels từ CSWinTransformer
+            for c in c2:
+                ch.append(c)
+        elif m is Stage:
+            idx = args[0]
+            # ch[f] là list các channels output của backbone, lấy đúng index
+            if isinstance(ch[f], (list, tuple)):
+                c2 = ch[f][idx]
+            else:
+                c2 = ch[f]
         else:
             c2 = ch[f]
 
